@@ -11,7 +11,6 @@ public class Flag {
     private FlagType flagType ;
     private String flag ;
     private String value ;
-    private boolean valid ;
 
     public Flag () {}
 
@@ -45,11 +44,4 @@ public class Flag {
         this.value = value;
     }
 
-    public void setValid (boolean valid) {
-        this.valid = valid ;
-    }
-
-    public boolean isValid () {
-        return valid ;
-    }
 }
