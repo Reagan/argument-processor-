@@ -1,32 +1,71 @@
 package com.outstare.arg.processor.adapter;
 
+import com.outstare.arg.processor.flag.Flag;
+import com.outstare.arg.processor.flag.flagtypes.HyphenatedFlagType;
+
+import java.util.ArrayList;
+import java.util.IllegalFormatFlagsException;
+
 /**
- * The Default Argument Processor adapter requires flags to be
- * defined with a hyphen, char/chars symbol and a value
- *
- * e.g. -l 20
- *
- * Default values for specific flags may be specified using this adapter
- *
+ * ${FILE_NAME}
+ * Created by rmbitiru on 1/5/15.
  */
-public class DefaultAdapter extends AbstractAdapter {
+public abstract class DefaultAdapter implements Adapter {
 
-    private String[] defaultValues ;
+    public String[] supportedChars;
 
-    public DefaultAdapter (String[] supportedChars, String[] defaultValues) {
-        if (null != supportedChars && null != defaultValues
-                && supportedChars.length == defaultValues.length) {
-            setSupportedChars(supportedChars) ;
-            setDefaultValues (defaultValues) ;
+    public void setSupportedChars (String[] supportedChars) throws IllegalFormatFlagsException {
+        boolean allFlagsValid = true ;
+        String invalidFlag = "%s is not a valid flag" ;
+
+        if (null != supportedChars && supportedChars.length > 0) {
+            for (String supportedChar : supportedChars) {
+                char[] containedChars = supportedChar.toCharArray() ;
+                for (char currChar : containedChars) {
+                    if (currChar < 20 && currChar > 90) {
+                        allFlagsValid = false;
+                        String.format(invalidFlag, supportedChar);
+                        break;
+                    }
+                }
+            }
+
+            if (!allFlagsValid)
+                throw new IllegalFormatFlagsException(invalidFlag) ;
+            else
+                this.supportedChars = supportedChars ;
         }
     }
 
-    public String[] getDefaultValues () {
-        return defaultValues ;
+    public ArrayList<Flag> extractArgs (String[] args) {
+        ArrayList<Flag> vars = new ArrayList<Flag>() ;
+        String currArgString ;
+        String value ;
+
+        for (String supportedChar : supportedChars) {
+            for (int argsCounter = 0 ;
+                 argsCounter < args.length ; argsCounter++) {
+
+                currArgString = args[argsCounter].substring(1, args[argsCounter].length()) ;
+
+                if (currArgString.equals(supportedChar)
+                        && args.length - 1 > argsCounter) {
+                    Flag currFlag = new Flag () ;
+                    value = getFlagValue (currArgString) ;
+                    currFlag.setFlagType(new HyphenatedFlagType());
+                    currFlag.setFlag(currArgString);
+                    currFlag.setValue(value);
+
+                    vars.add(currFlag);
+                }
+            }
+        }
+
+        return vars ;
     }
 
-    public void setDefaultValues (String[] defaultValues) {
-        this.defaultValues = defaultValues ;
+    public String getFlagValue (String flag) {
+        return flag ;
     }
 
 }
